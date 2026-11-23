@@ -74,6 +74,15 @@ const PHONE = '01044165656', PHONE_TXT = '010-4416-5656';
 const SLOTS = [['10:00','오전 10:00'],['11:30','오전 11:30'],['17:00','오후 5:00'],['18:30','오후 6:30'],['20:00','오후 8:00']];
 const DOW = ['일','월','화','수','목','금','토'];
 
+// ---------- in-app browsers (카카오톡 등) → 바깥 브라우저로 ----------
+(function () {
+  const ua = navigator.userAgent;
+  if (/KAKAOTALK/i.test(ua)) { location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(location.href); return; }
+  if (/Android/i.test(ua) && /(NAVER|Instagram|FBAN|FBAV|Line|DaumApps|everytimeApp|band)/i.test(ua)) {
+    location.href = 'intent://' + location.href.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+  }
+})();
+
 // ---------- token ----------
 const qs = new URLSearchParams(location.search);
 let TOKEN = qs.get('k') || '';
