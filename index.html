@@ -202,7 +202,7 @@ async function renderOwner() {
     app.innerHTML = frame('회원 목록', `${waitHtml ? '<div class="h2">새 가입 신청</div>' + waitHtml + '<div class="h2">회원</div>' : ''}<button class="btn line" data-go="addmember">+ 관장님이 직접 등록</button>
       ${ms.map(m => `<div class="card"><div class="big">${esc(m.name)}</div>
         <div class="sm">남은 ${m.left}회${m.expires ? ' · ' + dlabel(m.expires) + '까지' : ''}${m.left <= 3 ? '\n곧 끝나요. 재등록 안내가 필요해요' : ''}${m.car1 ? '\n차: ' + esc([m.car1, m.car2].filter(Boolean).join(', ')) : ''}</div>
-        <div class="sm">${esc(m.phone || '')}</div><button class="btn line" data-act="charge" data-id="${m.id}" data-name="${esc(m.name)}">20회 충전</button></div>`).join('') || '<div class="empty">아직 회원이 없어요</div>'}`);
+        <div class="sm">${esc(m.phone || '')}</div><div class="row"><button class="btn line" data-act="charge" data-id="${m.id}" data-name="${esc(m.name)}">20회 충전</button><button class="btn gray" data-act="remove" data-id="${m.id}" data-name="${esc(m.name)}">회원 삭제</button></div></div>`).join('') || '<div class="empty">아직 회원이 없어요</div>'}`);
     return;
   }
   if (sc === 'addmember') {
@@ -381,6 +381,7 @@ app.addEventListener('click', async e => {
       case 'charge': if (confirm(a.dataset.name + ' 회원님께 20회를 충전할까요?')) { await rpc('o_add_pass', { p_member: a.dataset.id, p_total: 20 }); toast('20회 충전했어요'); render(); } break;
       case 'approve': await rpc('o_approve', { p_member: a.dataset.id, p_ok: true, p_total: Number(a.dataset.t) }); toast('승인했어요'); render(); break;
       case 'deny': if (confirm('가입 신청을 거절할까요?')) { await rpc('o_approve', { p_member: a.dataset.id, p_ok: false, p_total: 0 }); toast('거절했어요'); render(); } break;
+      case 'remove': if (confirm(a.dataset.name + ' 회원님을 목록에서 지울까요?')) { await rpc('o_remove_member', { p_member: a.dataset.id }); toast('지웠어요'); render(); } break;
       case 'logout': if (confirm('로그아웃할까요?')) { try { localStorage.removeItem('ptk'); } catch (e) {} location.href = location.pathname; } break;
       case 'addmember': {
         const nm = $('#nm').value.trim(); if (!nm) { toast('이름을 적어 주세요'); break; }
