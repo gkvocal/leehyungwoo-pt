@@ -150,6 +150,7 @@ async function renderOwner() {
         <div class="grid">${tiles.map(t => `<button class="tile" data-go="${t[0]}">${svg(t[2])}${t[1]}${t[3] ? `<span class="badge">${t[3]}</span>` : ''}</button>`).join('')}</div>
         <button class="btn dark" data-go="off" style="min-height:64px">쉬는 날 · 쉬는 시간 정하기</button>
         ${installBlock()}
+        <button class="btn gray" data-act="logout" style="min-height:52px;font-size:18px">로그아웃</button>
       </div></div>`;
     return;
   }
@@ -419,6 +420,18 @@ function shareLink(name, token) {
 // ---------- login / signup ----------
 function authScreen(mode, msg) {
   const login = mode === 'login';
+  if (mode === 'owner') {
+    app.innerHTML = `<div class="owner"><div class="strip">관장님 로그인</div><div class="top" style="align-items:center;text-align:center;padding:36px 18px 26px">
+      <div class="logo" style="width:72px;height:72px;font-size:30px;border-radius:18px">PT</div><div class="hello">관장님 로그인</div></div>
+      <div class="pad">
+        <label class="l" for="oi">아이디</label><input class="in" id="oi" value="이형우" autocomplete="username">
+        <label class="l" for="op">비밀번호</label><input class="in" id="op" type="password" inputmode="numeric" autocomplete="current-password">
+        <button class="btn" data-auth="doowner" style="min-height:68px;font-size:23px">들어가기</button>
+        ${msg ? `<div class="note">${esc(msg)}</div>` : ''}
+        <button class="btn gray" data-auth="login" style="min-height:52px;font-size:18px">회원 로그인으로</button>
+      </div></div>`;
+    return;
+  }
   app.innerHTML = `<div class="member"><div class="top" style="align-items:center;text-align:center;padding:36px 18px 26px">
     <div class="logo" style="width:72px;height:72px;font-size:30px;border-radius:18px">PT</div><div class="hello">이형우 피티샵</div></div>
     <div class="pad">
@@ -434,13 +447,20 @@ function authScreen(mode, msg) {
         <div class="sm">가입하면 관장님이 승인해 주세요. 다음부터는 이름과 번호 뒷자리 4개로 들어와요.</div>`}
       ${msg ? `<div class="note">${esc(msg)}</div>` : ''}
       ${installBlock()}
+      <button class="btn gray" data-auth="owner" style="min-height:48px;font-size:17px;margin-top:20px">관장님 로그인</button>
     </div></div>`;
 }
 document.addEventListener('click', async e => {
   const b = e.target.closest('[data-auth]'); if (!b) return;
   const m = b.dataset.auth;
-  if (m === 'login' || m === 'signup') return authScreen(m);
+  if (m === 'login' || m === 'signup' || m === 'owner') return authScreen(m);
   try {
+    if (m === 'doowner') {
+      const r = await rpc('o_login', { p_id: $('#oi').value, p_pw: $('#op').value });
+      if (!r.ok) return authScreen('owner', r.msg);
+      TOKEN = r.token; try { localStorage.setItem('ptk', TOKEN); } catch (er) {}
+      return start();
+    }
     const r = m === 'dologin' ? await rpc('m_login', { p_name: $('#an').value, p_last4: $('#al').value })
       : await rpc('m_signup', { p_name: $('#sn').value, p_phone: $('#sp').value, p_car: $('#sc').value });
     if (!r.ok) return authScreen(m === 'dologin' ? 'login' : 'signup', r.msg);
