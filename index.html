@@ -121,9 +121,11 @@ const standalone = () => matchMedia('(display-mode: standalone)').matches || nav
 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 function installBlock() {
   if (standalone()) return '';
-  if (deferredPrompt) return `<button class="btn" data-act="install" style="min-height:68px;font-size:23px">바탕화면에 설치</button>`;
-  if (isIOS) return `<div class="note"><b>바탕화면에 설치하려면</b>화면 아래 네모에 화살표(↑) 버튼 → [홈 화면에 추가]를 누르세요.</div>`;
-  return '';
+  const guide = isIOS
+    ? '화면 아래 <b>네모에 화살표(↑)</b> 버튼 → <b>[홈 화면에 추가]</b> → 오른쪽 위 <b>[추가]</b>를 누르세요.'
+    : '오른쪽 위 <b>점 세 개(⋮)</b> 버튼 → <b>[홈 화면에 추가]</b> 또는 <b>[앱 설치]</b> → <b>[설치]</b>를 누르세요.';
+  return `<button class="btn" data-act="install" style="min-height:68px;font-size:23px">바탕화면에 설치</button>
+    ${S.showGuide ? `<div class="note"><b>이렇게 설치하세요</b>${guide}</div>` : ''}`;
 }
 
 // ---------- render ----------
@@ -369,7 +371,11 @@ app.addEventListener('click', async e => {
   const act = a.dataset.act, id = a.dataset.id ? Number(a.dataset.id) : null;
   try {
     switch (act) {
-      case 'install': deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; render(); break;
+      case 'install':
+        if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; render(); }
+        else if (ROLE) { S.showGuide = true; render(); }
+        else { S.showGuide = true; const t = document.createElement('div'); t.innerHTML = installBlock(); a.replaceWith(...t.children); }
+        break;
       case 'done': await rpc('o_complete', { p_id: id, p_done: true }); toast('수업 완료! 1회 차감했어요'); render(); break;
       case 'undone': if (confirm('완료를 취소할까요?')) { await rpc('o_complete', { p_id: id, p_done: false }); render(); } break;
       case 'dayshift': S.day = iso(addDays(new Date((S.day || iso(kstToday())) + 'T00:00:00Z'), Number(a.dataset.n))); render(); break;
