@@ -203,7 +203,7 @@ async function renderOwner() {
     S.waiting = wt;
     app.innerHTML = frame('회원 목록', `${waitHtml ? '<div class="h2">새 가입 신청</div>' + waitHtml + '<div class="h2">회원</div>' : ''}<button class="btn line" data-go="addmember">+ 관장님이 직접 등록</button>
       ${ms.map(m => `<div class="card"><div class="big">${esc(m.name)}</div>
-        <div class="sm">남은 ${m.left}회${m.expires ? ' · ' + dlabel(m.expires) + '까지' : ''}${m.left <= 3 ? '\n곧 끝나요. 재등록 안내가 필요해요' : ''}${m.car1 ? '\n차: ' + esc([m.car1, m.car2].filter(Boolean).join(', ')) : ''}</div>
+        <div class="sm">남은 ${m.left}회 (${m.used || 0} / ${m.total}회 함)${m.left <= 3 ? '\n곧 끝나요. 재등록 안내가 필요해요' : ''}${m.car1 ? '\n차: ' + esc([m.car1, m.car2].filter(Boolean).join(', ')) : ''}</div>
         <div class="sm">${esc(m.phone || '')}</div><div class="row"><button class="btn line" data-act="passform" data-mode="edit" data-id="${m.id}" data-name="${esc(m.name)}">횟수 고치기</button><button class="btn line" data-act="charge" data-id="${m.id}" data-name="${esc(m.name)}">20회 충전</button></div>
         <button class="btn gray" data-act="remove" data-id="${m.id}" data-name="${esc(m.name)}" style="min-height:48px;font-size:17px">회원 삭제</button></div>`).join('') || '<div class="empty">아직 회원이 없어요</div>'}`);
     return;
@@ -211,13 +211,11 @@ async function renderOwner() {
   if (sc === 'passform') {
     const p = S.pf, m = (S.members || []).find(x => x.id === p.id) || {};
     const total = p.mode === 'edit' && m.total ? m.total : 20, used = p.mode === 'edit' && m.used ? m.used : 0;
-    const start = p.mode === 'edit' && m.starts ? m.starts : iso(kstToday());
     app.innerHTML = frame(p.mode === 'approve' ? '가입 승인' : '횟수 고치기', `
       <div class="big">${esc(p.name)} 회원님</div>
       <div class="sm">어플 전부터 다니던 회원님은 이미 한 횟수를 적어 주세요.</div>
       <label class="l" for="pt">총 횟수 (PT권)</label><input class="in" id="pt" inputmode="numeric" value="${total}">
       <label class="l" for="pu">이미 한 횟수</label><input class="in" id="pu" inputmode="numeric" value="${used}">
-      <label class="l" for="ps">등록한 날 <span style="font-size:17px;font-weight:400;color:#555">(이날부터 3개월 사용)</span></label><input class="in" id="ps" type="date" value="${start}">
       <div class="note" id="pv"></div>
       <button class="btn" data-act="passsave">${p.mode === 'approve' ? '승인하고 저장' : '저장하기'}</button>`);
     const upd = () => { const t = +$('#pt').value || 0, u = +$('#pu').value || 0; $('#pv').innerHTML = `남은 횟수: <b style="font-size:24px;color:#C62828">${Math.max(t - u, 0)}회</b>`; };
@@ -318,7 +316,7 @@ async function renderMember() {
     const h = await rpc('m_home'); const m = h.me;
     const pct = m.total ? Math.round(m.left / m.total * 100) : 0;
     app.innerHTML = frame('남은 횟수', `<div class="card"><div class="sm">남은 수업</div><div style="font-size:60px;font-weight:900;color:#C62828">${m.left}회 <span style="font-size:22px;color:#555">/ ${m.total}회</span></div>
-      <div class="prog"><div style="width:${pct}%"></div></div><div class="sm">${m.expires ? dlabel(m.expires) + '까지 사용할 수 있어요' : '충전된 PT권이 없어요'}</div></div>
+      <div class="prog"><div style="width:${pct}%"></div></div><div class="sm">${m.total ? m.total + '회 중 ' + (m.total - m.left) + '회 했어요' : '충전된 PT권이 없어요'}</div></div>
       <div class="sm">재등록은 관장님께 말씀해 주세요.</div>`);
     return;
   }
@@ -405,7 +403,7 @@ app.addEventListener('click', async e => {
       case 'approve': await rpc('o_approve', { p_member: a.dataset.id, p_ok: true, p_total: Number(a.dataset.t) }); toast('승인했어요'); render(); break;
       case 'passform': go('passform', { pf: { id: a.dataset.id, name: a.dataset.name, mode: a.dataset.mode }, members: S.members }); break;
       case 'passsave': {
-        const t = parseInt($('#pt').value, 10), u = parseInt($('#pu').value || '0', 10), st = $('#ps').value || null;
+        const t = parseInt($('#pt').value, 10), u = parseInt($('#pu').value || '0', 10), st = null;
         const r = await rpc(S.pf.mode === 'approve' ? 'o_approve2' : 'o_set_pass', { p_member: S.pf.id, p_total: t, p_used: u, p_start: st });
         if (r.ok) { toast(S.pf.mode === 'approve' ? '승인했어요' : '저장했어요'); go('members'); } else toast(r.msg); break;
       }
