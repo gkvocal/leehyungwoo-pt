@@ -32,6 +32,7 @@ button{cursor:pointer}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .tile{position:relative;height:108px;background:#fff;border:2px solid #E2E2DE;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:21px;font-weight:900}
 .tile svg{width:40px;height:40px;stroke:#C62828;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.grid .tile:last-child:nth-child(odd){grid-column:span 2}
 .badge{position:absolute;top:9px;right:9px;background:#C62828;color:#fff;font-size:14px;font-weight:900;border-radius:12px;padding:2px 9px}
 .card{background:#fff;border:2px solid #E2E2DE;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
 .big{font-size:24px;font-weight:900;line-height:1.35}
@@ -138,7 +139,7 @@ async function renderOwner() {
   if (sc === 'home') {
     const h = await rpc('o_home');
     const left = h.today.items.filter(i => i.status === 'confirmed').length;
-    const tiles = [['today', '오늘 수업', ICON.cal, ''], ['week', '예약 확인', ICON.week, h.pending ? '신청 ' + h.pending : ''], ['members', '회원 목록', ICON.people, ''],
+    const tiles = [['today', '오늘 수업', ICON.cal, ''], ['week', '예약 확인', ICON.week, h.pending ? '신청 ' + h.pending : ''], ['members', '회원 목록', ICON.people, h.waiting ? '가입 ' + h.waiting : ''],
       ['meals', '식단 사진', ICON.camera, h.meals ? '새 사진 ' + h.meals : ''], ['park', '주차 등록', ICON.car, h.park ? '오늘 ' + h.park + '대' : ''], ['notice', '공지 보내기', ICON.speaker, '']];
     app.innerHTML = `<div class="owner"><div class="strip">관장님 화면</div>
       <div class="top"><div class="brand"><div class="logo">PT</div>이형우 피티샵</div><div class="hello">관장님, 안녕하세요</div></div>
@@ -191,12 +192,16 @@ async function renderOwner() {
     return;
   }
   if (sc === 'members') {
-    const ms = await rpc('o_members');
+    const [ms, wt] = await Promise.all([rpc('o_members'), rpc('o_waiting')]);
     S.members = ms;
-    app.innerHTML = frame('회원 목록', `<button class="btn" data-go="addmember">+ 새 회원 등록</button>
+    const waitHtml = wt.map(w => `<div class="card" style="border-color:#C62828"><div class="big">${esc(w.name)} · 가입 신청</div>
+      <div class="sm">${esc(w.phone || '')}${w.car1 ? '\n차: ' + esc(w.car1) : ''}</div>
+      <button class="btn" data-act="approve" data-id="${w.id}" data-t="20">승인 + 20회 충전</button>
+      <div class="row"><button class="btn line" data-act="approve" data-id="${w.id}" data-t="0">승인만</button><button class="btn gray" data-act="deny" data-id="${w.id}">거절</button></div></div>`).join('');
+    app.innerHTML = frame('회원 목록', `${waitHtml ? '<div class="h2">새 가입 신청</div>' + waitHtml + '<div class="h2">회원</div>' : ''}<button class="btn line" data-go="addmember">+ 관장님이 직접 등록</button>
       ${ms.map(m => `<div class="card"><div class="big">${esc(m.name)}</div>
         <div class="sm">남은 ${m.left}회${m.expires ? ' · ' + dlabel(m.expires) + '까지' : ''}${m.left <= 3 ? '\n곧 끝나요. 재등록 안내가 필요해요' : ''}${m.car1 ? '\n차: ' + esc([m.car1, m.car2].filter(Boolean).join(', ')) : ''}</div>
-        <div class="row"><button class="btn line" data-act="charge" data-id="${m.id}" data-name="${esc(m.name)}">20회 충전</button><button class="btn line" data-act="sendlink" data-token="${m.token}" data-name="${esc(m.name)}">어플 링크 보내기</button></div></div>`).join('') || '<div class="empty">아직 회원이 없어요</div>'}`);
+        <div class="sm">${esc(m.phone || '')}</div><button class="btn line" data-act="charge" data-id="${m.id}" data-name="${esc(m.name)}">20회 충전</button></div>`).join('') || '<div class="empty">아직 회원이 없어요</div>'}`);
     return;
   }
   if (sc === 'addmember') {
@@ -255,7 +260,7 @@ async function renderMember() {
     const h = await rpc('m_home');
     ME = h.me;
     const next = h.bookings[0];
-    const tiles = [['book', '수업 예약', ICON.cal], ['left', '남은 횟수', ICON.ticket], ['car', '내 차 번호', ICON.car], ['meal', '식단 올리기', ICON.camera], ['body', '내 몸 변화', ICON.chart], ['call', '관장님께 전화', ICON.phone]];
+    const tiles = [['book', '수업 예약', ICON.cal], ['left', '남은 횟수', ICON.ticket], ['car', '내 차 번호', ICON.car], ['meal', '식단 올리기', ICON.camera], ['body', '내 몸 변화', ICON.chart]];
     app.innerHTML = `<div class="member"><div class="strip">회원님 화면</div>
       <div class="top"><div class="brand"><div class="logo">PT</div>이형우 피티샵</div><div class="hello">${esc(ME.name)} 회원님, 반가워요</div></div>
       <div class="pad">
@@ -265,6 +270,7 @@ async function renderMember() {
         ${h.messages.length ? '<div class="h2">알림</div>' + h.messages.map(m => `<div class="msg">${esc(m.text)}</div>`).join('') : ''}
         ${h.replies.length ? '<div class="h2">관장님 한마디</div>' + h.replies.map(r => `<div class="msg" style="border-color:#C62828">식단 사진에: <b>${esc(r.reply)}</b></div>`).join('') : ''}
         ${installBlock()}
+        <button class="btn gray" data-act="logout" style="min-height:52px;font-size:18px">다른 사람으로 로그인</button>
       </div></div>`;
     return;
   }
@@ -372,11 +378,13 @@ app.addEventListener('click', async e => {
       case 'accept': { const r = await rpc('o_decide', { p_id: id, p_accept: true }); toast(r.ok ? '받았어요. 회원님께 알렸어요' : (r.msg || '처리 못 했어요')); render(); break; }
       case 'reject': await rpc('o_decide', { p_id: id, p_accept: false }); toast('거절했어요. 회원님께 알렸어요'); render(); break;
       case 'charge': if (confirm(a.dataset.name + ' 회원님께 20회를 충전할까요?')) { await rpc('o_add_pass', { p_member: a.dataset.id, p_total: 20 }); toast('20회 충전했어요'); render(); } break;
-      case 'sendlink': shareLink(a.dataset.name, a.dataset.token); break;
+      case 'approve': await rpc('o_approve', { p_member: a.dataset.id, p_ok: true, p_total: Number(a.dataset.t) }); toast('승인했어요'); render(); break;
+      case 'deny': if (confirm('가입 신청을 거절할까요?')) { await rpc('o_approve', { p_member: a.dataset.id, p_ok: false, p_total: 0 }); toast('거절했어요'); render(); } break;
+      case 'logout': if (confirm('로그아웃할까요?')) { try { localStorage.removeItem('ptk'); } catch (e) {} location.href = location.pathname; } break;
       case 'addmember': {
         const nm = $('#nm').value.trim(); if (!nm) { toast('이름을 적어 주세요'); break; }
         const m = await rpc('o_add_member', { p_name: nm, p_phone: $('#ph').value, p_total: Number($('#tt').value) || 0, p_start: null });
-        toast('등록했어요'); go('members'); setTimeout(() => shareLink(m.name, m.token), 400); break;
+        toast('등록했어요. 회원님은 이름과 번호 뒷자리로 로그인해요'); go('members'); break;
       }
       case 'reply': await rpc('o_reply', { p_id: id, p_reply: a.dataset.r }); toast('답장 보냈어요'); render(); break;
       case 'park': await rpc('o_park', { p_id: id, p_parked: true }); render(); break;
@@ -408,16 +416,53 @@ function shareLink(name, token) {
   else prompt('이 링크를 복사해서 보내 주세요', url);
 }
 
+// ---------- login / signup ----------
+function authScreen(mode, msg) {
+  const login = mode === 'login';
+  app.innerHTML = `<div class="member"><div class="top" style="align-items:center;text-align:center;padding:36px 18px 26px">
+    <div class="logo" style="width:72px;height:72px;font-size:30px;border-radius:18px">PT</div><div class="hello">이형우 피티샵</div></div>
+    <div class="pad">
+      <div class="row"><button class="btn ${login ? '' : 'line'}" data-auth="login">로그인</button><button class="btn ${login ? 'line' : ''}" data-auth="signup">처음이에요 (회원가입)</button></div>
+      ${login ? `
+        <label class="l" for="an">이름</label><input class="in" id="an" placeholder="예: 김민수" autocomplete="name">
+        <label class="l" for="al">휴대폰 번호 뒷자리 4개</label><input class="in" id="al" inputmode="numeric" maxlength="4" placeholder="예: 5678">
+        <button class="btn" data-auth="dologin" style="min-height:68px;font-size:23px">들어가기</button>` : `
+        <label class="l" for="sn">이름</label><input class="in" id="sn" placeholder="예: 김민수" autocomplete="name">
+        <label class="l" for="sp">휴대폰 번호</label><input class="in" id="sp" inputmode="tel" placeholder="010-0000-0000" autocomplete="tel">
+        <label class="l" for="sc">차 번호 <span style="font-size:17px;font-weight:400;color:#555">(차가 있으면)</span></label><input class="in" id="sc" placeholder="예: 12가 3456">
+        <button class="btn" data-auth="dosignup" style="min-height:68px;font-size:23px">회원가입</button>
+        <div class="sm">가입하면 관장님이 승인해 주세요. 다음부터는 이름과 번호 뒷자리 4개로 들어와요.</div>`}
+      ${msg ? `<div class="note">${esc(msg)}</div>` : ''}
+      ${installBlock()}
+    </div></div>`;
+}
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-auth]'); if (!b) return;
+  const m = b.dataset.auth;
+  if (m === 'login' || m === 'signup') return authScreen(m);
+  try {
+    const r = m === 'dologin' ? await rpc('m_login', { p_name: $('#an').value, p_last4: $('#al').value })
+      : await rpc('m_signup', { p_name: $('#sn').value, p_phone: $('#sp').value, p_car: $('#sc').value });
+    if (!r.ok) return authScreen(m === 'dologin' ? 'login' : 'signup', r.msg);
+    TOKEN = r.token; try { localStorage.setItem('ptk', TOKEN); } catch (er) {}
+    start();
+  } catch (er) { console.error(er); toast('잠깐 연결이 안 됐어요. 다시 눌러 주세요'); }
+});
+
 // ---------- start ----------
-(async function start() {
-  if (!TOKEN) { app.innerHTML = `<div class="pad" style="padding-top:60px;text-align:center"><div class="logo" style="margin:0 auto;width:72px;height:72px;font-size:30px;border-radius:18px">PT</div>
-    <div class="hello" style="margin-top:16px">이형우 피티샵</div><div class="sm">관장님께 받은 링크로 들어와 주세요.</div><a class="btn" href="tel:${PHONE}" style="display:flex;align-items:center;justify-content:center;text-decoration:none">관장님께 전화 (${PHONE_TXT})</a></div>`; return; }
+async function start() {
+  if (!TOKEN) return authScreen('login');
   try {
     const w = await rpc('whoami');
     if (w.role === 'none') { try { localStorage.removeItem('ptk'); } catch (e) {} TOKEN = ''; return start(); }
+    if (w.role === 'waiting') { app.innerHTML = `<div class="member"><div class="strip">회원님 화면</div><div class="pad" style="padding-top:50px;text-align:center">
+      <div class="logo" style="margin:0 auto;width:72px;height:72px;font-size:30px;border-radius:18px">PT</div>
+      <div class="hello">${esc(w.name)} 회원님,<br>가입 신청이 됐어요</div><div class="sm">관장님이 승인하시면 바로 쓸 수 있어요.</div>
+      <button class="btn" onclick="location.reload()">승인됐는지 다시 보기</button>${installBlock()}</div></div>`; return; }
     ROLE = w.role; ME = w.member || null; S = { screen: 'home' }; render();
   } catch (e) { app.innerHTML = `<div class="loading">연결이 잠깐 안 돼요.<br><br><button class="btn" onclick="location.reload()">다시 열기</button></div>`; }
-})();
+}
+start();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 document.addEventListener('visibilitychange', () => { if (!document.hidden && ROLE && S.screen === 'home') render(); });
 </script>
