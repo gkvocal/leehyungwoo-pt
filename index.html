@@ -270,7 +270,7 @@ async function renderMember() {
   }
   if (sc === 'call') { location.href = 'tel:' + PHONE; S.screen = 'home'; return renderMember(); }
   if (sc === 'book') {
-    const days = Array.from({ length: 21 }, (_, i) => addDays(kstToday(), i + 1));
+    const days = Array.from({ length: 14 }, (_, i) => addDays(kstToday(), i + 1));
     const day = S.day || iso(days[0]);
     const [slots, h] = await Promise.all([rpc('m_slots', { p_day: day }), rpc('m_home')]);
     const st = { open: ['바로 예약돼요', ''], request: ['관장님 확인 후 확정', ''], full: ['마감', 'off'], closed: ['쉬는 시간', 'off'], mine: ['내 예약', 'on'], mine_pending: ['신청함 · 확인 중', 'on'] };
