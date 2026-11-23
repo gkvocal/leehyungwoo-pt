@@ -398,8 +398,7 @@ app.addEventListener('click', async e => {
     switch (act) {
       case 'install':
         if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; render(); }
-        else if (ROLE) { S.showGuide = true; render(); }
-        else { S.showGuide = true; const t = document.createElement('div'); t.innerHTML = installBlock(); a.replaceWith(...t.children); }
+        else toast('오른쪽 위 점 세 개(⋮) → [홈 화면에 추가]를 눌러 주세요');
         break;
       case 'done': await rpc('o_complete', { p_id: id, p_done: true }); toast('수업 완료! 1회 차감했어요'); render(); break;
       case 'undone': if (confirm('완료를 취소할까요?')) { await rpc('o_complete', { p_id: id, p_done: false }); render(); } break;
