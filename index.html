@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="이형우PT">
+<title>이형우 피티샵</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:#F4F4F2;color:#111;font-family:Pretendard,'Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-size:18px}
+#app{max-width:520px;margin:0 auto;min-height:100vh;background:#F4F4F2}
+button,input,textarea,select{font-family:inherit;color:inherit}
+button{cursor:pointer}
+.strip{color:#fff;font-size:16px;font-weight:900;text-align:center;padding:6px 0;letter-spacing:2px}
+.owner .strip{background:#7A1414}.member .strip{background:#1F4E8C}
+.top{background:#111;color:#fff;padding:18px 18px 20px;display:flex;flex-direction:column;gap:10px}
+.brand{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:900}
+.logo{width:40px;height:40px;border-radius:11px;background:#C62828;color:#fff;font-size:17px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.hello{font-size:27px;font-weight:900;line-height:1.3}
+.bar{background:#111;color:#fff;padding:12px 12px 14px;display:flex;align-items:center;gap:6px;position:sticky;top:0;z-index:5}
+.bar h1{margin:0;font-size:26px;font-weight:900}
+.back{width:52px;height:52px;background:none;border:none;display:flex;align-items:center;justify-content:center;color:#fff}
+.pad{padding:16px;display:flex;flex-direction:column;gap:12px}
+.hero{background:#C62828;color:#fff;border:none;border-radius:18px;padding:18px 20px;text-align:left;display:flex;flex-direction:column;gap:4px;width:100%}
+.hero .s{font-size:17px;font-weight:700;color:#FFE1DD}.hero .b{font-size:30px;font-weight:900}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.tile{position:relative;height:108px;background:#fff;border:2px solid #E2E2DE;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:21px;font-weight:900}
+.tile svg{width:40px;height:40px;stroke:#C62828;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.badge{position:absolute;top:9px;right:9px;background:#C62828;color:#fff;font-size:14px;font-weight:900;border-radius:12px;padding:2px 9px}
+.card{background:#fff;border:2px solid #E2E2DE;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.big{font-size:24px;font-weight:900;line-height:1.35}
+.sm{font-size:18px;color:#555;line-height:1.5;white-space:pre-line}
+.btn{min-height:60px;border:none;border-radius:13px;background:#C62828;color:#fff;font-size:21px;font-weight:900;padding:0 14px;width:100%}
+.btn.dark{background:#111}.btn.gray{background:#E2E2DE;color:#333}.btn.line{background:#fff;color:#111;border:2px solid #BDBDB8}
+.btn.ok{background:#EAF5EA;color:#1B5E20;border:2px solid #2E7D32}
+.btn:disabled{opacity:.5}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1 1 120px}
+.chips{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.chip{height:64px;border-radius:12px;border:2px solid #E2E2DE;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;font-weight:900}
+.chip span{font-size:15px;font-weight:400}
+.chip.on{background:#C62828;border-color:#C62828;color:#fff}.chip.dk.on{background:#111;border-color:#111}
+.slot{height:64px;border-radius:12px;border:2px solid #E2E2DE;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-size:23px;font-weight:900;width:100%}
+.slot small{font-size:17px;font-weight:700}
+.slot.on{background:#C62828;border-color:#C62828;color:#fff}
+.slot.off{background:#E2E2DE;color:#666;cursor:not-allowed}
+.slot.x{background:#555;border-color:#555;color:#fff;text-decoration:line-through}
+.h2{font-size:22px;font-weight:900;margin-top:4px}
+label.l{font-size:21px;font-weight:900}
+input.in,textarea.in,select.in{width:100%;min-height:62px;border:2px solid #BDBDB8;border-radius:12px;padding:0 16px;font-size:24px;font-weight:700;background:#fff}
+textarea.in{padding:14px 16px;min-height:120px;font-size:21px}
+.note{background:#FFF4F2;border:2px solid #F3C4BE;border-radius:14px;padding:14px 16px;font-size:18px;line-height:1.5;display:flex;flex-direction:column;gap:10px}
+.msg{background:#fff;border-radius:14px;padding:12px 16px;font-size:18px;line-height:1.5;border-left:6px solid #1F4E8C}
+.empty{text-align:center;color:#666;font-size:19px;padding:24px 0}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#111;color:#fff;padding:16px 22px;border-radius:14px;font-size:19px;font-weight:700;z-index:50;max-width:90%;text-align:center}
+.meal img{width:100%;border-radius:12px;max-height:340px;object-fit:cover}
+.prog{height:14px;background:#ECECE8;border-radius:7px;overflow:hidden}.prog div{height:14px;background:#C62828}
+.loading{padding:60px 20px;text-align:center;font-size:20px;color:#555}
+.install{background:#C62828;color:#fff}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading">불러오는 중...</div></div>
+<script>
+const SB = 'https://sbginxqygegbbqwbrwdn.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNiZ2lueHF5Z2VnYmJxd2Jyd2RuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU0MTEyNjEsImV4cCI6MjExMDk4NzI2MX0.Q_34LpDuq3ftdJ0XtetjJ4WIl3-5h6Y79vMGKIj1goc';
+const PHONE = '01044165656', PHONE_TXT = '010-4416-5656';
+const SLOTS = [['10:00','오전 10:00'],['11:30','오전 11:30'],['17:00','오후 5:00'],['18:30','오후 6:30'],['20:00','오후 8:00']];
+const DOW = ['일','월','화','수','목','금','토'];
+
+// ---------- token ----------
+const qs = new URLSearchParams(location.search);
+let TOKEN = qs.get('k') || '';
+try { if (TOKEN) localStorage.setItem('ptk', TOKEN); else TOKEN = localStorage.getItem('ptk') || ''; } catch (e) {}
+
+async function rpc(fn, args) {
+  const r = await fetch(SB + '/rest/v1/rpc/' + fn, { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ p_token: TOKEN }, args || {})) });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const $ = s => document.querySelector(s);
+function toast(t) { const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2600); }
+function kstToday() { const d = new Date(Date.now() + 9 * 3600e3); return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())); }
+function addDays(d, n) { return new Date(d.getTime() + n * 86400e3); }
+const iso = d => d.toISOString().slice(0, 10);
+const md = d => (d.getUTCMonth() + 1) + '/' + d.getUTCDate();
+const dlabel = s => { const d = new Date(s + 'T00:00:00Z'); return (d.getUTCMonth() + 1) + '월 ' + d.getUTCDate() + '일 (' + DOW[d.getUTCDay()] + ')'; };
+const slotLabel = s => (SLOTS.find(x => x[0] === s) || [s, s])[1];
+
+const ICON = {
+  cal: 'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4', week: 'M4 5h16v15H4zM4 9h16M8 13h2M12 13h2M16 13h2M8 16h2M12 16h2',
+  people: 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.5a3.5 3.5 0 0 1 0 6.5M18 14c2.2.7 3.5 2.8 3.5 6',
+  camera: 'M4 8h3l2-3h6l2 3h3v11H4zM12 16.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z', car: 'M5 16h14M6 16l1.5-5h9L18 16M5 16v3M19 16v3M8 13.5h.01M16 13.5h.01',
+  speaker: 'M4 10v4h4l6 4V6l-6 4zM17.5 9.5a4 4 0 0 1 0 5', ticket: 'M4 7h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4zM14 7v10',
+  chart: 'M4 20V4M4 20h16M8 16l4-5 3 3 5-6', phone: 'M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1z'
+};
+const svg = p => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${p}"/></svg>`;
+const CHECK = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-5px;margin-right:6px"><path d="M5 12l5 5L20 7"/></svg>';
+
+let ROLE = null, ME = null, S = {}; // S = screen state
+const app = $('#app');
+
+function frame(title, body) {
+  return `<div class="${ROLE}"><div class="strip">${ROLE === 'owner' ? '관장님 화면' : '회원님 화면'}</div>
+  <div class="bar"><button class="back" data-go="home" aria-label="처음 화면으로"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><h1>${title}</h1></div>
+  <div class="pad">${body}<button class="btn dark" data-go="home" style="margin-top:6px">처음 화면으로</button></div></div>`;
+}
+function go(screen, extra) { S = Object.assign({ screen }, extra || {}); window.scrollTo(0, 0); render(); }
+
+// ---------- install ----------
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; if (S.screen === 'home') render(); });
+const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+function installBlock() {
+  if (standalone()) return '';
+  if (deferredPrompt) return `<button class="btn" data-act="install" style="min-height:68px;font-size:23px">바탕화면에 설치</button>`;
+  if (isIOS) return `<div class="note"><b>바탕화면에 설치하려면</b>화면 아래 네모에 화살표(↑) 버튼 → [홈 화면에 추가]를 누르세요.</div>`;
+  return '';
+}
+
+// ---------- render ----------
+async function render() {
+  try {
+    if (ROLE === 'owner') await renderOwner(); else await renderMember();
+  } catch (e) { console.error(e); app.innerHTML = `<div class="loading">연결이 잠깐 안 돼요.<br><br><button class="btn" onclick="location.reload()">다시 열기</button></div>`; }
+}
+
+// ===== OWNER =====
+async function renderOwner() {
+  const sc = S.screen || 'home';
+  if (sc === 'home') {
+    const h = await rpc('o_home');
+    const left = h.today.items.filter(i => i.status === 'confirmed').length;
+    const tiles = [['today', '오늘 수업', ICON.cal, ''], ['week', '예약 확인', ICON.week, h.pending ? '신청 ' + h.pending : ''], ['members', '회원 목록', ICON.people, ''],
+      ['meals', '식단 사진', ICON.camera, h.meals ? '새 사진 ' + h.meals : ''], ['park', '주차 등록', ICON.car, h.park ? '오늘 ' + h.park + '대' : ''], ['notice', '공지 보내기', ICON.speaker, '']];
+    app.innerHTML = `<div class="owner"><div class="strip">관장님 화면</div>
+      <div class="top"><div class="brand"><div class="logo">PT</div>이형우 피티샵</div><div class="hello">관장님, 안녕하세요</div></div>
+      <div class="pad">
+        <button class="hero" data-go="${h.pending ? 'week' : 'today'}"><span class="s">오늘 수업 · ${esc(h.today.label)}</span>
+          <span class="b">${h.today.items.length ? left + '개 남았어요' : '오늘 수업 없어요'}</span>
+          <span class="s">${h.pending ? '예약 신청 ' + h.pending + '건 확인해 주세요' : (h.today.items.find(i => i.status === 'confirmed') ? '다음: ' + h.today.items.find(i => i.status === 'confirmed').slotLabel + ' ' + esc(h.today.items.find(i => i.status === 'confirmed').name) : '눌러서 보기')}</span></button>
+        <div class="grid">${tiles.map(t => `<button class="tile" data-go="${t[0]}">${svg(t[2])}${t[1]}${t[3] ? `<span class="badge">${t[3]}</span>` : ''}</button>`).join('')}</div>
+        <button class="btn dark" data-go="off" style="min-height:64px">쉬는 날 · 쉬는 시간 정하기</button>
+        ${installBlock()}
+      </div></div>`;
+    return;
+  }
+  if (sc === 'today') {
+    const day = S.day || iso(kstToday());
+    const d = await rpc('o_day', { p_day: day });
+    const closed = d.closures.includes('all') ? '<div class="note">이 날은 쉬는 날로 정해 두셨어요.</div>' : '';
+    const items = d.items.map(i => `<div class="card"><div class="big">${i.slotLabel}  ${esc(i.name)}</div>
+      <div class="sm">남은 횟수 ${i.left}회${i.phone ? ' · ' + esc(i.phone) : ''}</div>
+      ${i.status === 'done' ? `<button class="btn ok" data-act="undone" data-id="${i.id}">${CHECK}완료됨 (1회 차감)</button>` : `<button class="btn" data-act="done" data-id="${i.id}">수업 완료</button>`}</div>`).join('');
+    const t = kstToday(), cur = new Date(day + 'T00:00:00Z');
+    app.innerHTML = frame(iso(t) === day ? '오늘 수업' : '수업 보기', `
+      <div class="row"><button class="btn line" data-act="dayshift" data-n="-1">◀ 전날</button><button class="btn line" data-act="dayshift" data-n="1">다음날 ▶</button></div>
+      <div class="big" style="text-align:center">${esc(d.label)}</div>${closed}
+      ${items || '<div class="empty">예약된 수업이 없어요</div>'}
+      <button class="btn line" data-go="addbook" data-day="${day}">+ 전화 예약 넣기</button>`);
+    return;
+  }
+  if (sc === 'addbook') {
+    const ms = S.members || (S.members = await rpc('o_members'));
+    const day = S.bday || S.day || iso(kstToday());
+    const days = Array.from({ length: 14 }, (_, i) => addDays(kstToday(), i));
+    app.innerHTML = frame('전화 예약 넣기', `
+      <label class="l" for="bm">회원</label>
+      <select class="in" id="bm">${ms.map(m => `<option value="${m.id}" ${S.bm === m.id ? 'selected' : ''}>${esc(m.name)} (남은 ${m.left}회)</option>`).join('')}</select>
+      <div class="h2">날짜</div>
+      <div class="chips">${days.map(d => `<button class="chip dk ${iso(d) === day ? 'on' : ''}" data-act="bday" data-d="${iso(d)}"><span>${DOW[d.getUTCDay()]}</span>${md(d)}</button>`).join('')}</div>
+      <div class="h2">시간</div>
+      ${SLOTS.map(s => `<button class="slot ${S.bslot === s[0] ? 'on' : ''}" data-act="bslot" data-s="${s[0]}">${s[1]}</button>`).join('')}
+      <button class="btn" data-act="obook" ${S.bslot && ms.length ? '' : 'disabled'}>예약 넣기</button>`);
+    return;
+  }
+  if (sc === 'week') {
+    const [p, w] = await Promise.all([rpc('o_pending'), rpc('o_week')]);
+    const pend = p.map(x => `<div class="card" style="border-color:#C62828"><div class="big">${esc(x.name)} 회원님 신청</div>
+      <div class="sm">${esc(x.label)}\n이미 있는 회원: ${esc(x.others || '없음')}</div>
+      <div class="row"><button class="btn" data-act="accept" data-id="${x.id}">받기</button><button class="btn gray" data-act="reject" data-id="${x.id}">거절</button></div></div>`).join('');
+    const week = w.map(d => `<div class="card"><div class="big">${esc(d.label)}</div>${d.rows.map(r => `<div class="sm"><b>${r.slot}</b>  ${r.closed ? '쉬는 시간' : esc(r.names || '-')}</div>`).join('')}</div>`).join('');
+    app.innerHTML = frame('예약 확인', (pend ? '<div class="h2">새 신청 (3번째 자리)</div>' + pend : '') + '<div class="h2">이번 주 예약</div>' + week);
+    return;
+  }
+  if (sc === 'members') {
+    const ms = await rpc('o_members');
+    S.members = ms;
+    app.innerHTML = frame('회원 목록', `<button class="btn" data-go="addmember">+ 새 회원 등록</button>
+      ${ms.map(m => `<div class="card"><div class="big">${esc(m.name)}</div>
+        <div class="sm">남은 ${m.left}회${m.expires ? ' · ' + dlabel(m.expires) + '까지' : ''}${m.left <= 3 ? '\n곧 끝나요. 재등록 안내가 필요해요' : ''}${m.car1 ? '\n차: ' + esc([m.car1, m.car2].filter(Boolean).join(', ')) : ''}</div>
+        <div class="row"><button class="btn line" data-act="charge" data-id="${m.id}" data-name="${esc(m.name)}">20회 충전</button><button class="btn line" data-act="sendlink" data-token="${m.token}" data-name="${esc(m.name)}">어플 링크 보내기</button></div></div>`).join('') || '<div class="empty">아직 회원이 없어요</div>'}`);
+    return;
+  }
+  if (sc === 'addmember') {
+    app.innerHTML = frame('새 회원 등록', `
+      <label class="l" for="nm">이름</label><input class="in" id="nm" placeholder="예: 김민수">
+      <label class="l" for="ph">전화번호</label><input class="in" id="ph" inputmode="tel" placeholder="010-0000-0000">
+      <label class="l" for="tt">PT 횟수</label><input class="in" id="tt" inputmode="numeric" value="20">
+      <button class="btn" data-act="addmember">등록하기</button>`);
+    return;
+  }
+  if (sc === 'meals') {
+    const ms = await rpc('o_meals');
+    app.innerHTML = frame('식단 사진', ms.map(m => `<div class="card meal"><div class="big">${esc(m.name)}</div>
+      ${m.photo_url ? `<img src="${esc(m.photo_url)}" alt="${esc(m.name)} 식단 사진" loading="lazy">` : ''}
+      ${m.note ? `<div class="sm">${esc(m.note)}</div>` : ''}
+      ${m.reply ? `<div class="btn ok" style="display:flex;align-items:center;justify-content:center">${CHECK}보낸 답: ${esc(m.reply)}</div>` :
+        `<div class="row">${['잘했어요', '양 줄이기', '단백질 더'].map(r => `<button class="btn" data-act="reply" data-id="${m.id}" data-r="${r}">${r}</button>`).join('')}</div>`}</div>`).join('') || '<div class="empty">아직 올라온 사진이 없어요</div>');
+    return;
+  }
+  if (sc === 'park') {
+    const d = await rpc('o_day', { p_day: iso(kstToday()) });
+    const cars = d.items.filter(i => i.car1 || i.car2);
+    app.innerHTML = frame('주차 등록', `<div class="sm">오늘 오는 회원님 차예요. 건물에 등록하신 다음 버튼을 눌러 주세요.</div>` + (cars.map(i => `<div class="card"><div class="big">${esc(i.name)} · ${i.slotLabel}</div>
+      <div class="sm" style="font-size:22px;color:#111;font-weight:700">${esc(i.car1 || '')}${i.car2 ? '\n' + esc(i.car2) + ' (두 번째 차)' : ''}</div>
+      ${i.parked ? `<button class="btn ok" data-act="unpark" data-id="${i.id}">${CHECK}주차 등록함</button>` : `<button class="btn" data-act="park" data-id="${i.id}">등록했어요</button>`}</div>`).join('') || '<div class="empty">오늘 차 번호가 있는 예약이 없어요</div>'));
+    return;
+  }
+  if (sc === 'notice') {
+    app.innerHTML = frame('공지 보내기', `<div class="sm">모든 회원님 어플 첫 화면에 보여요.</div>
+      <textarea class="in" id="nt" placeholder="예: 12월 31일은 쉽니다"></textarea><button class="btn" data-act="notice">보내기</button>`);
+    return;
+  }
+  if (sc === 'off') {
+    const list = await rpc('o_closures');
+    const days = Array.from({ length: 28 }, (_, i) => addDays(kstToday(), i));
+    const day = S.oday || iso(days[0]);
+    const sel = S.oslots || {};
+    const any = S.oall || Object.keys(sel).length;
+    app.innerHTML = frame('쉬는 날 정하기', `
+      <div class="h2">① 쉬는 날짜를 누르세요</div>
+      <div class="chips">${days.map(d => `<button class="chip dk ${iso(d) === day ? 'on' : ''}" data-act="oday" data-d="${iso(d)}"><span>${DOW[d.getUTCDay()]}</span>${md(d)}</button>`).join('')}</div>
+      <div class="h2">② 얼마나 쉬세요?</div>
+      <button class="slot ${S.oall ? 'x' : ''}" style="justify-content:center;text-decoration:none" data-act="oall">하루 종일 쉬어요</button>
+      <div class="sm">일부 시간만 쉬시면 그 시간만 누르세요</div>
+      <div class="grid">${SLOTS.map(s => `<button class="slot ${S.oall || sel[s[0]] ? 'x' : ''}" style="justify-content:center" data-act="oslot" data-s="${s[0]}">${s[1]}</button>`).join('')}</div>
+      <button class="btn" data-act="osave" ${any ? '' : 'disabled'}>${dlabel(day)} 쉬기로 저장</button>
+      ${list.length ? `<div class="h2">저장된 쉬는 날</div>${list.map(c => `<div class="card"><div class="big">${esc(c.label)}</div><button class="btn line" data-act="unclose" data-id="${c.id}">다시 열기</button></div>`).join('')}` : ''}`);
+    return;
+  }
+}
+
+// ===== MEMBER =====
+async function renderMember() {
+  const sc = S.screen || 'home';
+  if (sc === 'home') {
+    const h = await rpc('m_home');
+    ME = h.me;
+    const next = h.bookings[0];
+    const tiles = [['book', '수업 예약', ICON.cal], ['left', '남은 횟수', ICON.ticket], ['car', '내 차 번호', ICON.car], ['meal', '식단 올리기', ICON.camera], ['body', '내 몸 변화', ICON.chart], ['call', '관장님께 전화', ICON.phone]];
+    app.innerHTML = `<div class="member"><div class="strip">회원님 화면</div>
+      <div class="top"><div class="brand"><div class="logo">PT</div>이형우 피티샵</div><div class="hello">${esc(ME.name)} 회원님, 반가워요</div></div>
+      <div class="pad">
+        <button class="hero" data-go="book"><span class="s">다음 수업</span><span class="b">${next ? esc(next.label) : '예약이 없어요'}</span>
+          <span class="s">${next && next.status === 'pending' ? '관장님 확인을 기다리는 중' : '남은 횟수 ' + ME.left + '회 · 눌러서 예약하기'}</span></button>
+        <div class="grid">${tiles.map(t => `<button class="tile" data-go="${t[0]}">${svg(t[2])}${t[1]}</button>`).join('')}</div>
+        ${h.messages.length ? '<div class="h2">알림</div>' + h.messages.map(m => `<div class="msg">${esc(m.text)}</div>`).join('') : ''}
+        ${h.replies.length ? '<div class="h2">관장님 한마디</div>' + h.replies.map(r => `<div class="msg" style="border-color:#C62828">식단 사진에: <b>${esc(r.reply)}</b></div>`).join('') : ''}
+        ${installBlock()}
+      </div></div>`;
+    return;
+  }
+  if (sc === 'call') { location.href = 'tel:' + PHONE; S.screen = 'home'; return renderMember(); }
+  if (sc === 'book') {
+    const days = Array.from({ length: 21 }, (_, i) => addDays(kstToday(), i + 1));
+    const day = S.day || iso(days[0]);
+    const [slots, h] = await Promise.all([rpc('m_slots', { p_day: day }), rpc('m_home')]);
+    const st = { open: ['바로 예약돼요', ''], request: ['관장님 확인 후 확정', ''], full: ['마감', 'off'], closed: ['쉬는 시간', 'off'], mine: ['내 예약', 'on'], mine_pending: ['신청함 · 확인 중', 'on'] };
+    const mine = h.bookings.map(b => `<div class="card"><div class="big">${esc(b.label)}</div><div class="sm">${b.status === 'pending' ? '관장님 확인을 기다리는 중' : '예약 확정'}</div>
+      <button class="btn line" data-act="mcancel" data-id="${b.id}">예약 취소</button></div>`).join('');
+    const pick = S.slot && slots.find(s => s.slot === S.slot);
+    app.innerHTML = frame('수업 예약', `
+      <div class="note"><div><b>오늘만 빼고</b> 언제든 예약할 수 있어요.<br>오늘 오시려면 관장님께 전화 주세요.</div><a class="btn dark" href="tel:${PHONE}" style="display:flex;align-items:center;justify-content:center;text-decoration:none;min-height:54px">오늘 예약 · 전화 걸기</a></div>
+      <div class="h2">① 날짜를 누르세요</div>
+      <div class="chips">${days.map(d => `<button class="chip ${iso(d) === day ? 'on' : ''}" data-act="mday" data-d="${iso(d)}"><span>${DOW[d.getUTCDay()]}</span>${md(d)}</button>`).join('')}</div>
+      <div class="h2">② 시간을 누르세요</div>
+      ${slots.map(s => { const k = st[s.state]; const on = S.slot === s.slot && (s.state === 'open' || s.state === 'request');
+        return `<button class="slot ${on ? 'on' : k[1]}" data-act="mslot" data-s="${s.slot}" data-state="${s.state}" ${k[1] === 'off' ? 'disabled' : ''}>${s.label}<small>${on ? '선택함' : k[0]}</small></button>`; }).join('')}
+      ${pick && (pick.state === 'open' || pick.state === 'request') ? `<button class="btn" data-act="mbook" style="min-height:70px">${dlabel(day)} ${slotLabel(S.slot)} ${pick.state === 'request' ? '신청하기' : '예약하기'}</button>` : ''}
+      ${mine ? '<div class="h2">내 예약</div>' + mine : ''}`);
+    return;
+  }
+  if (sc === 'left') {
+    const h = await rpc('m_home'); const m = h.me;
+    const pct = m.total ? Math.round(m.left / m.total * 100) : 0;
+    app.innerHTML = frame('남은 횟수', `<div class="card"><div class="sm">남은 수업</div><div style="font-size:60px;font-weight:900;color:#C62828">${m.left}회 <span style="font-size:22px;color:#555">/ ${m.total}회</span></div>
+      <div class="prog"><div style="width:${pct}%"></div></div><div class="sm">${m.expires ? dlabel(m.expires) + '까지 사용할 수 있어요' : '충전된 PT권이 없어요'}</div></div>
+      <div class="sm">재등록은 관장님께 말씀해 주세요.</div>`);
+    return;
+  }
+  if (sc === 'car') {
+    const h = await rpc('m_home'); const m = h.me;
+    app.innerHTML = frame('내 차 번호', `<div class="sm">차 번호를 적어 두시면 오실 때마다 관장님이 주차 등록을 해 드려요.</div>
+      <label class="l" for="c1">첫 번째 차</label><input class="in" id="c1" value="${esc(m.car1 || '')}" placeholder="예: 12가 3456">
+      <label class="l" for="c2">두 번째 차 <span style="font-size:17px;font-weight:400;color:#555">(없으면 비워 두세요)</span></label><input class="in" id="c2" value="${esc(m.car2 || '')}" placeholder="예: 34나 7890">
+      <button class="btn" data-act="cars">저장하기</button>`);
+    return;
+  }
+  if (sc === 'meal') {
+    const ms = await rpc('m_meals');
+    app.innerHTML = frame('식단 올리기', `<div class="sm">오늘 먹은 것을 찍어 주세요. 관장님이 보고 답해 드려요.</div>
+      <label class="btn" style="display:flex;align-items:center;justify-content:center;min-height:72px" for="ph">사진 찍기 / 고르기</label>
+      <input id="ph" type="file" accept="image/*" style="display:none">
+      <input class="in" id="mn" placeholder="한 줄 메모 (안 써도 돼요)" style="font-size:20px">
+      <div id="prev"></div>
+      ${ms.map(m => `<div class="card meal">${m.photo_url ? `<img src="${esc(m.photo_url)}" alt="내 식단 사진" loading="lazy">` : ''}${m.note ? `<div class="sm">${esc(m.note)}</div>` : ''}
+        <div class="sm">${m.reply ? '관장님: <b style="color:#C62828">' + esc(m.reply) + '</b>' : '관장님 확인 전'}</div></div>`).join('')}`);
+    return;
+  }
+  if (sc === 'body') {
+    const ls = await rpc('m_body');
+    const f = ls[0], l = ls[ls.length - 1];
+    const diff = (a, b, u) => { const d = Math.round((b - a) * 10) / 10; return d === 0 ? '그대로예요' : (d < 0 ? Math.abs(d) + u + ' 줄었어요' : d + u + ' 늘었어요'); };
+    app.innerHTML = frame('내 몸 변화', `${ls.length >= 2 && f.weight && l.weight ? `<div class="card"><div class="big">몸무게 ${f.weight}kg → ${l.weight}kg</div><div class="sm">처음보다 ${diff(f.weight, l.weight, 'kg')}</div></div>` : ''}
+      ${ls.length >= 2 && f.muscle && l.muscle ? `<div class="card"><div class="big">골격근량 ${f.muscle}kg → ${l.muscle}kg</div><div class="sm">처음보다 ${diff(f.muscle, l.muscle, 'kg')}</div></div>` : ''}
+      <div class="h2">오늘 기록하기</div>
+      <label class="l" for="wt">몸무게 (kg)</label><input class="in" id="wt" inputmode="decimal" placeholder="예: 74.5">
+      <label class="l" for="mu">골격근량 (kg, 모르면 비워 두세요)</label><input class="in" id="mu" inputmode="decimal" placeholder="예: 32">
+      <button class="btn" data-act="body">저장하기</button>
+      ${ls.length ? '<div class="h2">지난 기록</div>' + ls.slice().reverse().map(b => `<div class="sm">${dlabel(b.day)} · ${b.weight ?? '-'}kg${b.muscle ? ' · 근육 ' + b.muscle + 'kg' : ''}</div>`).join('') : ''}`);
+    return;
+  }
+}
+
+// ---------- actions ----------
+async function compress(file) {
+  const img = await createImageBitmap(file).catch(() => null);
+  if (!img) return file;
+  const max = 1280, r = Math.min(1, max / Math.max(img.width, img.height));
+  const c = document.createElement('canvas'); c.width = Math.round(img.width * r); c.height = Math.round(img.height * r);
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  return new Promise(res => c.toBlob(b => res(b || file), 'image/jpeg', 0.82));
+}
+async function uploadMeal(file) {
+  const blob = await compress(file);
+  const path = 'm/' + (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '' + Math.random()).replace(/[^a-z0-9-]/gi, '') + '.jpg';
+  const r = await fetch(SB + '/storage/v1/object/meals/' + path, { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'image/jpeg' }, body: blob });
+  if (!r.ok) throw new Error(await r.text());
+  return SB + '/storage/v1/object/public/meals/' + path;
+}
+
+app.addEventListener('change', async e => {
+  if (e.target.type === 'file' && e.target.files && e.target.files[0]) {
+    $('#prev').innerHTML = '<div class="empty">올리는 중...</div>';
+    try { const url = await uploadMeal(e.target.files[0]); await rpc('m_add_meal', { p_url: url, p_note: ($('#mn') || {}).value || '' }); toast('관장님께 보냈어요'); render(); }
+    catch (err) { console.error(err); $('#prev').innerHTML = ''; toast('사진을 못 올렸어요. 다시 해 주세요'); }
+  }
+});
+
+app.addEventListener('click', async e => {
+  const g = e.target.closest('[data-go]');
+  if (g) { const extra = {}; if (g.dataset.day) extra.bday = g.dataset.day; if (S.screen === 'today' && g.dataset.go === 'addbook') extra.day = S.day; go(g.dataset.go, extra); return; }
+  const a = e.target.closest('[data-act]'); if (!a || a.disabled) return;
+  const act = a.dataset.act, id = a.dataset.id ? Number(a.dataset.id) : null;
+  try {
+    switch (act) {
+      case 'install': deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; render(); break;
+      case 'done': await rpc('o_complete', { p_id: id, p_done: true }); toast('수업 완료! 1회 차감했어요'); render(); break;
+      case 'undone': if (confirm('완료를 취소할까요?')) { await rpc('o_complete', { p_id: id, p_done: false }); render(); } break;
+      case 'dayshift': S.day = iso(addDays(new Date((S.day || iso(kstToday())) + 'T00:00:00Z'), Number(a.dataset.n))); render(); break;
+      case 'bday': S.bday = a.dataset.d; S.bm = $('#bm').value; render(); break;
+      case 'bslot': S.bslot = a.dataset.s; S.bm = $('#bm').value; render(); break;
+      case 'obook': { const r = await rpc('o_book', { p_member: $('#bm').value, p_day: S.bday || S.day || iso(kstToday()), p_slot: S.bslot }); if (r.ok) { toast('예약을 넣었어요'); go('today', { day: S.bday || S.day }); } else toast(r.msg); break; }
+      case 'accept': { const r = await rpc('o_decide', { p_id: id, p_accept: true }); toast(r.ok ? '받았어요. 회원님께 알렸어요' : (r.msg || '처리 못 했어요')); render(); break; }
+      case 'reject': await rpc('o_decide', { p_id: id, p_accept: false }); toast('거절했어요. 회원님께 알렸어요'); render(); break;
+      case 'charge': if (confirm(a.dataset.name + ' 회원님께 20회를 충전할까요?')) { await rpc('o_add_pass', { p_member: a.dataset.id, p_total: 20 }); toast('20회 충전했어요'); render(); } break;
+      case 'sendlink': shareLink(a.dataset.name, a.dataset.token); break;
+      case 'addmember': {
+        const nm = $('#nm').value.trim(); if (!nm) { toast('이름을 적어 주세요'); break; }
+        const m = await rpc('o_add_member', { p_name: nm, p_phone: $('#ph').value, p_total: Number($('#tt').value) || 0, p_start: null });
+        toast('등록했어요'); go('members'); setTimeout(() => shareLink(m.name, m.token), 400); break;
+      }
+      case 'reply': await rpc('o_reply', { p_id: id, p_reply: a.dataset.r }); toast('답장 보냈어요'); render(); break;
+      case 'park': await rpc('o_park', { p_id: id, p_parked: true }); render(); break;
+      case 'unpark': await rpc('o_park', { p_id: id, p_parked: false }); render(); break;
+      case 'notice': { const t = $('#nt').value.trim(); if (!t) break; await rpc('o_notice', { p_text: t }); toast('모든 회원님께 보냈어요'); go('home'); break; }
+      case 'oday': S.oday = a.dataset.d; S.oslots = {}; S.oall = false; render(); break;
+      case 'oall': S.oall = !S.oall; S.oslots = {}; render(); break;
+      case 'oslot': { S.oall = false; S.oslots = S.oslots || {}; if (S.oslots[a.dataset.s]) delete S.oslots[a.dataset.s]; else S.oslots[a.dataset.s] = true; render(); break; }
+      case 'osave': { const day = S.oday || iso(kstToday()); const r = await rpc('o_close', { p_day: day, p_slots: S.oall ? null : Object.keys(S.oslots || {}) });
+        toast('저장했어요' + (r.cancelled ? ' · 예약 ' + r.cancelled + '건은 회원님께 알렸어요' : '')); S.oslots = {}; S.oall = false; render(); break; }
+      case 'unclose': await rpc('o_unclose', { p_id: id }); toast('다시 열었어요'); render(); break;
+      case 'mday': S.day = a.dataset.d; S.slot = null; render(); break;
+      case 'mslot': if (['open', 'request'].includes(a.dataset.state)) { S.slot = a.dataset.s; render(); } break;
+      case 'mbook': { const r = await rpc('m_book', { p_day: S.day || iso(addDays(kstToday(), 1)), p_slot: S.slot });
+        if (r.ok) { toast(r.status === 'pending' ? '신청했어요. 관장님이 확인하면 알려 드려요' : '예약됐어요!'); S.slot = null; render(); } else toast(r.msg); break; }
+      case 'mcancel': if (confirm('이 예약을 취소할까요?')) { const r = await rpc('m_cancel', { p_id: id }); toast(r.ok ? '취소했어요' : r.msg); render(); } break;
+      case 'cars': await rpc('m_set_cars', { p_car1: $('#c1').value, p_car2: $('#c2').value }); toast('저장했어요'); go('home'); break;
+      case 'body': { const w = parseFloat($('#wt').value), m = parseFloat($('#mu').value); if (isNaN(w) && isNaN(m)) { toast('숫자를 적어 주세요'); break; }
+        await rpc('m_add_body', { p_weight: isNaN(w) ? null : w, p_muscle: isNaN(m) ? null : m }); toast('저장했어요'); render(); break; }
+    }
+  } catch (err) { console.error(err); toast('잠깐 연결이 안 됐어요. 다시 눌러 주세요'); }
+});
+
+function shareLink(name, token) {
+  const url = location.origin + location.pathname + '?k=' + token;
+  const text = `[이형우 피티샵] ${name} 회원님 전용 어플이에요.\n아래 주소를 누르고, 빨간 [바탕화면에 설치] 버튼을 눌러 주세요.\n${url}`;
+  if (navigator.share) navigator.share({ text }).catch(() => {});
+  else if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => toast('링크를 복사했어요. 카톡에 붙여 넣으세요'));
+  else prompt('이 링크를 복사해서 보내 주세요', url);
+}
+
+// ---------- start ----------
+(async function start() {
+  if (!TOKEN) { app.innerHTML = `<div class="pad" style="padding-top:60px;text-align:center"><div class="logo" style="margin:0 auto;width:72px;height:72px;font-size:30px;border-radius:18px">PT</div>
+    <div class="hello" style="margin-top:16px">이형우 피티샵</div><div class="sm">관장님께 받은 링크로 들어와 주세요.</div><a class="btn" href="tel:${PHONE}" style="display:flex;align-items:center;justify-content:center;text-decoration:none">관장님께 전화 (${PHONE_TXT})</a></div>`; return; }
+  try {
+    const w = await rpc('whoami');
+    if (w.role === 'none') { try { localStorage.removeItem('ptk'); } catch (e) {} TOKEN = ''; return start(); }
+    ROLE = w.role; ME = w.member || null; S = { screen: 'home' }; render();
+  } catch (e) { app.innerHTML = `<div class="loading">연결이 잠깐 안 돼요.<br><br><button class="btn" onclick="location.reload()">다시 열기</button></div>`; }
+})();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+document.addEventListener('visibilitychange', () => { if (!document.hidden && ROLE && S.screen === 'home') render(); });
+</script>
+</body>
+</html>
