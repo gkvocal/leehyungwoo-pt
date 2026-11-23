@@ -130,11 +130,12 @@ const standalone = () => matchMedia('(display-mode: standalone)').matches || nav
 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 function installBlock() {
   if (standalone()) return '';
-  const guide = isIOS
-    ? '화면 아래 <b>네모에 화살표(↑)</b> 버튼 → <b>[홈 화면에 추가]</b> → 오른쪽 위 <b>[추가]</b>를 누르세요.'
-    : '오른쪽 위 <b>점 세 개(⋮)</b> 버튼 → <b>[홈 화면에 추가]</b> 또는 <b>[앱 설치]</b> → <b>[설치]</b>를 누르세요.';
-  return `<button class="btn" data-act="install" style="min-height:68px;font-size:23px">바탕화면에 설치</button>
-    ${S.showGuide ? `<div class="note"><b>이렇게 설치하세요</b>${guide}</div>` : ''}`;
+  const box = (title, on, steps) => `<div class="card" style="${on ? 'border-color:#C62828' : ''}"><div class="big">${title}${on ? ' <span style="font-size:16px;color:#C62828">← 지금 이 폰</span>' : ''}</div>
+    ${steps.map((t, i) => `<div style="display:flex;gap:10px;align-items:flex-start;font-size:19px;line-height:1.5"><b style="flex:0 0 30px;height:30px;border-radius:15px;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px">${i + 1}</b><span>${t}</span></div>`).join('')}</div>`;
+  const galaxy = box('갤럭시', !isIOS, ['아래 빨간 <b>[바탕화면에 설치]</b>를 누르세요', '뜨는 창에서 <b>[설치]</b>를 누르면 끝!', '안 뜨면: 오른쪽 위 <b>점 세 개(⋮)</b> → <b>[홈 화면에 추가]</b> 또는 <b>[앱 설치]</b>']);
+  const iphone = box('아이폰', isIOS, ['화면 아래 <b>네모에 화살표(↑)</b> 버튼을 누르세요', '아래로 내려서 <b>[홈 화면에 추가]</b>를 누르세요', '오른쪽 위 <b>[추가]</b>를 누르면 끝!']);
+  return `<div class="h2" style="margin-top:8px">바탕화면에 설치하기</div>
+    ${isIOS ? iphone + galaxy : `<button class="btn" data-act="install" style="min-height:68px;font-size:23px">바탕화면에 설치</button>` + galaxy + iphone}`;
 }
 
 // ---------- render ----------
