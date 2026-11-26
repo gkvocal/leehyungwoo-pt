@@ -258,12 +258,23 @@ async function renderOwner() {
     return;
   }
   if (sc === 'week') {
-    const [p, w] = await Promise.all([rpc('o_pending'), rpc('o_week')]);
+    const range = S.range || 7;
+    const [p, w] = await Promise.all([rpc('o_pending'), rpc('o_range', { p_days: range })]);
     const pend = p.map(x => `<div class="card" style="border-color:#C62828"><div class="big">${esc(x.name)} 회원님 신청</div>
       <div class="sm">${esc(x.label)}\n이미 있는 회원: ${esc(x.others || '없음')}</div>
       <div class="row"><button class="btn" data-act="accept" data-id="${x.id}">받기</button><button class="btn gray" data-act="reject" data-id="${x.id}">거절</button></div></div>`).join('');
-    const week = w.map(d => `<div class="card"><div class="big">${esc(d.label)}</div>${d.rows.map(r => `<div class="sm"><b>${r.slot}</b>  ${r.closed ? '쉬는 시간' : esc(r.names || '-')}</div>`).join('')}</div>`).join('');
-    app.innerHTML = frame('예약 확인', (pend ? '<div class="h2">새 신청 (3번째 자리)</div>' + pend : '') + '<div class="h2">이번 주 예약</div>' + week);
+    const tab = (n, t) => `<button class="btn ${range === n ? '' : 'line'}" data-act="range" data-n="${n}" style="min-height:54px;font-size:19px">${t}</button>`;
+    const days = range === 7 ? w : w.filter(d => d.cnt > 0 || d.allday || d.rows.some(r => r.closed));
+    const total = w.reduce((a, d) => a + d.cnt, 0);
+    const list = days.map(d => {
+      const rows = range === 7 ? d.rows : d.rows.filter(r => r.names || r.closed);
+      return `<div class="card"><div class="big">${esc(d.label)}${d.cnt ? ` <span style="font-size:17px;color:#C62828">${d.cnt}명</span>` : ''}</div>
+        ${d.allday ? '<div class="sm"><b>하루 종일 쉬는 날</b></div>' : rows.map(r => `<div class="sm"><b>${r.slot}</b>  ${r.closed ? '쉬는 시간' : esc(r.names || '-')}</div>`).join('')}</div>`;
+    }).join('');
+    app.innerHTML = frame('예약 확인', (pend ? '<div class="h2">새 신청 (3번째 자리)</div>' + pend : '') +
+      `<div class="row">${tab(7, '1주')}${tab(30, '한 달')}${tab(90, '3개월')}</div>
+      <div class="sm">${range === 7 ? '이번 주 7일' : (range === 30 ? '오늘부터 한 달' : '오늘부터 3개월')} 예약 <b>${total}건</b>${range === 7 ? '' : ' · 예약 없는 날은 안 보여요'}</div>` +
+      (list || '<div class="empty">이 기간에는 예약이 없어요</div>'));
     return;
   }
   if (sc === 'members') {
@@ -464,6 +475,7 @@ app.addEventListener('click', async e => {
         break;
       case 'done': await rpc('o_complete', { p_id: id, p_done: true }); toast('수업 완료! 1회 차감했어요'); render(); break;
       case 'undone': if (confirm('완료를 취소할까요?')) { await rpc('o_complete', { p_id: id, p_done: false }); render(); } break;
+      case 'range': S.range = Number(a.dataset.n); render(); break;
       case 'dayshift': S.day = iso(addDays(new Date((S.day || iso(kstToday())) + 'T00:00:00Z'), Number(a.dataset.n))); render(); break;
       case 'bday': S.bday = a.dataset.d; S.bm = $('#bm').value; render(); break;
       case 'bslot': S.bslot = a.dataset.s; S.bm = $('#bm').value; render(); break;
