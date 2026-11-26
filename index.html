@@ -377,22 +377,56 @@ async function renderMember() {
   }
   if (sc === 'call') { location.href = 'tel:' + PHONE; S.screen = 'home'; return renderMember(); }
   if (sc === 'book') {
-    const days = Array.from({ length: 14 }, (_, i) => addDays(kstToday(), i + 1));
-    const day = S.day || iso(days[0]);
-    const [slots, h] = await Promise.all([rpc('m_slots', { p_day: day }), rpc('m_home')]);
-    const st = { open: ['바로 예약돼요', ''], request: ['관장님 확인 후 확정', ''], full: ['마감', 'off'], closed: ['쉬는 시간', 'off'], mine: ['내 예약', 'on'], mine_pending: ['신청함 · 확인 중', 'on'] };
+    const mode = S.bmode || 'day';
+    const [rng, h] = await Promise.all([rpc('m_slots_range', { p_days: 30 }), rpc('m_home')]);
+    S.rng = rng;
+    const can = Math.max((h.me.left || 0) - h.bookings.length, 0);
+    const ST = { open: ['바로 예약돼요', ''], request: ['관장님 확인 후 확정', ''], full: ['마감', 'off'], closed: ['쉬는 시간', 'off'], mine: ['내 예약', 'on'], mine_pending: ['신청함 · 확인 중', 'on'] };
     const mine = h.bookings.map(b => `<div class="card"><div class="big">${esc(b.label)}</div><div class="sm">${b.status === 'pending' ? '관장님 확인을 기다리는 중' : '예약 확정'}</div>
       <button class="btn line" data-act="mcancel" data-id="${b.id}">예약 취소</button></div>`).join('');
-    const pick = S.slot && slots.find(s => s.slot === S.slot);
-    app.innerHTML = frame('수업 예약', `
-      <div class="note"><div><b>오늘만 빼고</b> 언제든 예약할 수 있어요.<br>오늘 오시려면 관장님께 전화 주세요.</div><a class="btn dark" href="tel:${PHONE}" style="display:flex;align-items:center;justify-content:center;text-decoration:none;min-height:54px">오늘 예약 · 전화 걸기</a></div>
-      <div class="h2">① 날짜를 누르세요</div>
-      <div class="chips">${days.map(d => `<button class="chip ${iso(d) === day ? 'on' : ''}" data-act="mday" data-d="${iso(d)}"><span>${DOW[d.getUTCDay()]}</span>${md(d)}</button>`).join('')}</div>
-      <div class="h2">② 시간을 누르세요</div>
-      ${slots.map(s => { const k = st[s.state]; const on = S.slot === s.slot && (s.state === 'open' || s.state === 'request');
-        return `<button class="slot ${on ? 'on' : k[1]}" data-act="mslot" data-s="${s.slot}" data-state="${s.state}" ${k[1] === 'off' ? 'disabled' : ''}>${s.label}<small>${on ? '선택함' : k[0]}</small></button>`; }).join('')}
-      ${pick && (pick.state === 'open' || pick.state === 'request') ? `<button class="btn" data-act="mbook" style="min-height:70px">${dlabel(day)} ${slotLabel(S.slot)} ${pick.state === 'request' ? '신청하기' : '예약하기'}</button>` : ''}
-      ${mine ? '<div class="h2">내 예약</div>' + mine : ''}`);
+    const tabs = `<div class="row"><button class="btn ${mode === 'day' ? '' : 'line'}" data-act="bmode" data-m="day" style="min-height:56px;font-size:19px">하루씩 예약</button>
+      <button class="btn ${mode === 'month' ? '' : 'line'}" data-act="bmode" data-m="month" style="min-height:56px;font-size:19px">한 달 한 번에</button></div>`;
+    const note = `<div class="note"><div><b>오늘만 빼고</b> 한 달 안에서 언제든 예약할 수 있어요.<br>오늘 오시려면 관장님께 전화 주세요.</div><a class="btn dark" href="tel:${PHONE}" style="display:flex;align-items:center;justify-content:center;text-decoration:none;min-height:54px">오늘 예약 · 전화 걸기</a></div>
+      <div class="sm">남은 횟수 <b>${h.me.left}회</b> · 이미 잡힌 예약 ${h.bookings.length}개 → 더 예약할 수 있는 수업 <b>${can}회</b></div>`;
+    let body = '';
+    if (mode === 'day') {
+      const day = S.day || rng[0].day;
+      const cur = rng.find(d => d.day === day) || rng[0];
+      const first = new Date(rng[0].day + 'T00:00:00Z'), pad = first.getUTCDay();
+      const cells = Array(pad).fill('<div></div>').concat(rng.map(d => {
+        const dt = new Date(d.day + 'T00:00:00Z'), v = Object.values(d.slots);
+        const has = v.some(x => x === 'mine' || x === 'mine_pending'), open = v.some(x => x === 'open' || x === 'request');
+        return `<button class="chip ${d.day === day ? 'on' : ''}" data-act="mday" data-d="${d.day}" style="height:58px;font-size:17px;${open ? '' : 'opacity:.45'}"><span>${dt.getUTCMonth() + 1}월</span>${dt.getUTCDate()}${has ? '<i style="display:block;width:8px;height:8px;border-radius:4px;background:' + (d.day === day ? '#fff' : '#1F4E8C') + '"></i>' : ''}</button>`;
+      })).join('');
+      const slots = SLOTS.map(([k, label]) => { const st = cur.slots[k], t = ST[st], on = S.slot === k && (st === 'open' || st === 'request');
+        return `<button class="slot ${on ? 'on' : t[1]}" data-act="mslot" data-s="${k}" data-state="${st}" ${t[1] === 'off' ? 'disabled' : ''}>${label}<small>${on ? '선택함' : t[0]}</small></button>`; }).join('');
+      const pick = S.slot && (cur.slots[S.slot] === 'open' || cur.slots[S.slot] === 'request');
+      body = `<div class="h2">① 날짜를 누르세요</div>
+        <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;text-align:center;font-size:15px;color:#555">${DOW.map(d => `<div>${d}</div>`).join('')}${cells}</div>
+        <div class="sm" style="font-size:15px">파란 점: 내 예약이 있는 날</div>
+        <div class="h2">② ${dlabel(day)} 시간을 누르세요</div>${slots}
+        ${pick ? `<button class="btn" data-act="mbook" style="min-height:70px">${dlabel(day)} ${slotLabel(S.slot)} ${cur.slots[S.slot] === 'request' ? '신청하기' : '예약하기'}</button>` : ''}`;
+      S.day = day;
+    } else {
+      const wd = S.wd || {}, tm = S.mtime;
+      const wdBtns = [1, 2, 3, 4, 5, 6, 0].map(n => `<button class="chip ${wd[n] ? 'on' : ''}" data-act="wd" data-n="${n}" style="height:58px;font-size:20px">${DOW[n]}</button>`).join('');
+      const tBtns = SLOTS.map(([k, label]) => `<button class="slot ${tm === k ? 'on' : ''}" data-act="mtime" data-s="${k}" style="justify-content:center">${label}</button>`).join('');
+      let plan = '';
+      if (Object.keys(wd).length && tm) {
+        const list = rng.filter(d => wd[new Date(d.day + 'T00:00:00Z').getUTCDay()]);
+        let left = can; const items = [];
+        list.forEach(d => { const st = d.slots[tm];
+          if (st === 'open' || st === 'request') { if (left > 0) { items.push({ day: d.day, st }); left--; } else items.push({ day: d.day, st: 'nocount' }); }
+          else items.push({ day: d.day, st }); });
+        S.plan = items.filter(x => x.st === 'open' || x.st === 'request');
+        const lbl = { open: ['예약돼요', '#1B5E20'], request: ['관장님 확인 후 확정', '#B26A00'], full: ['마감이라 빠져요', '#888'], closed: ['쉬는 시간이라 빠져요', '#888'], mine: ['이미 내 예약', '#1F4E8C'], mine_pending: ['이미 신청함', '#1F4E8C'], nocount: ['남은 횟수가 모자라 빠져요', '#888'] };
+        plan = `<div class="h2">③ 이렇게 예약돼요</div><div class="card">${items.map(x => `<div style="display:flex;justify-content:space-between;font-size:19px;padding:4px 0;border-bottom:1px solid #eee"><b>${dlabel(x.day)}</b><span style="color:${lbl[x.st][1]};font-weight:700">${lbl[x.st][0]}</span></div>`).join('') || '<div class="sm">한 달 안에 그 요일이 없어요</div>'}</div>
+          ${S.plan.length ? `<button class="btn" data-act="mbookmany" style="min-height:72px;font-size:22px">${slotLabel(tm)} · ${S.plan.length}번 한 번에 예약하기</button>` : '<div class="note">예약할 수 있는 날이 없어요. 다른 요일이나 시간을 골라 보세요.</div>'}`;
+      }
+      body = `<div class="h2">① 오는 요일을 모두 누르세요</div><div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px">${wdBtns}</div>
+        <div class="h2">② 시간을 누르세요</div>${tBtns}${plan}`;
+    }
+    app.innerHTML = frame('수업 예약', note + tabs + body + (mine ? '<div class="h2">내 예약</div>' + mine : ''));
     return;
   }
   if (sc === 'left') {
@@ -508,6 +542,18 @@ app.addEventListener('click', async e => {
       case 'osave': { const day = S.oday || iso(kstToday()); const r = await rpc('o_close', { p_day: day, p_slots: S.oall ? null : Object.keys(S.oslots || {}) });
         toast('저장했어요' + (r.cancelled ? ' · 예약 ' + r.cancelled + '건은 회원님께 알렸어요' : '')); S.oslots = {}; S.oall = false; render(); break; }
       case 'unclose': await rpc('o_unclose', { p_id: id }); toast('다시 열었어요'); render(); break;
+      case 'bmode': S.bmode = a.dataset.m; S.slot = null; render(); break;
+      case 'wd': { S.wd = S.wd || {}; const n = a.dataset.n; if (S.wd[n]) delete S.wd[n]; else S.wd[n] = true; render(); break; }
+      case 'mtime': S.mtime = a.dataset.s; render(); break;
+      case 'mbookmany': {
+        const plan = S.plan || []; if (!plan.length) break;
+        if (!confirm(plan.length + '번을 한 번에 예약할까요?')) break;
+        a.disabled = true; a.textContent = '예약하는 중...';
+        let ok = 0, pend = 0, fail = 0;
+        for (const p of plan) { try { const r = await rpc('m_book', { p_day: p.day, p_slot: S.mtime }); if (r.ok) { r.status === 'pending' ? pend++ : ok++; } else fail++; } catch (er) { fail++; } }
+        toast(`예약 ${ok}번${pend ? ' · 관장님 확인 ' + pend + '번' : ''}${fail ? ' · 안 된 것 ' + fail + '번' : ''}`);
+        S.wd = {}; S.mtime = null; render(); break;
+      }
       case 'mday': S.day = a.dataset.d; S.slot = null; render(); break;
       case 'mslot': if (['open', 'request'].includes(a.dataset.state)) { S.slot = a.dataset.s; render(); } break;
       case 'mbook': { const r = await rpc('m_book', { p_day: S.day || iso(addDays(kstToday(), 1)), p_slot: S.slot });
