@@ -152,8 +152,6 @@ const TUT = {
     ['.tile[data-go=today]', '오늘 수업', '수업이 끝나면 회원 이름 아래 빨간 <b>[수업 완료]</b>만 누르세요. 횟수가 1회 자동으로 빠져요.<br>전화로 받은 예약은 <b>[전화 예약 넣기]</b>로 넣어요.'],
     ['.tile[data-go=week]', '예약 확인', '한 시간에 2명이 차면, 3번째 회원은 <b>신청</b>으로 들어와요. 여기서 <b>[받기]</b> 또는 <b>[거절]</b>을 누르세요.'],
     ['.tile[data-go=members]', '회원 목록', '새 회원이 가입하면 여기에 <b>"가입"</b> 표시가 떠요. <b>[승인하기]</b>를 누르고 총 횟수와 이미 한 횟수를 넣으면 돼요.<br>충전·횟수 고치기도 여기서 해요.'],
-    ['.tile[data-go=meals]', '식단 사진', '회원이 올린 식단 사진이에요. <b>[잘했어요] [양 줄이기] [단백질 더]</b> 중 하나만 누르면 답장이 가요.'],
-    ['.tile[data-go=park]', '주차 등록', '오늘 오는 회원의 차 번호가 보여요. 건물에 등록하신 다음 <b>[등록했어요]</b>를 누르세요.'],
     ['.tile[data-go=notice]', '공지 보내기', '모든 회원에게 한 번에 알림을 보내요.'],
     ['.pad > [data-go=off]', '쉬는 날 정하기', '일 있는 날은 미리 날짜와 시간을 막아 두세요. 그 시간엔 회원이 예약을 못 하고, 이미 예약한 회원에겐 자동으로 알려요.'],
     [null, '다 됐어요!', '모르는 게 있으면 첫 화면 맨 아래 <b>[사용법 다시 보기]</b>를 누르세요.']
@@ -163,9 +161,6 @@ const TUT = {
     ['.tile[data-go=book]', '수업 예약', '<b>날짜</b> 누르고 → <b>시간</b> 누르고 → 빨간 <b>[예약하기]</b>. 끝!<br>오늘 수업은 어플이 아니라 <b>관장님께 전화</b>로 예약해요.'],
     ['.hero', '다음 수업', '예약한 다음 수업이 여기 크게 보여요.'],
     ['.tile[data-go=left]', '남은 횟수', '몇 번 남았는지 보여요. 수업이 끝나면 자동으로 1회씩 빠져요.'],
-    ['.tile[data-go=car]', '내 차 번호', '차 번호를 적어 두시면 오실 때마다 관장님이 주차 등록을 해 드려요. 차가 두 대면 두 칸 다 적으세요.'],
-    ['.tile[data-go=meal]', '식단 올리기', '먹은 음식 사진을 올리면 관장님이 보고 답장해 드려요.'],
-    ['.tile[data-go=body]', '내 몸 변화', '몸무게를 적어 두면 처음보다 얼마나 변했는지 보여요.'],
     [null, '다 됐어요!', '예약 확정이나 공지는 첫 화면 <b>"알림"</b>에 나와요. 모르면 맨 아래 <b>[사용법 다시 보기]</b>를 누르세요.']
   ]
 };
@@ -218,7 +213,7 @@ async function renderOwner() {
     const h = await rpc('o_home');
     const left = h.today.items.filter(i => i.status === 'confirmed').length;
     const tiles = [['today', '오늘 수업', ICON.cal, ''], ['week', '예약 확인', ICON.week, h.pending ? '신청 ' + h.pending : ''], ['members', '회원 목록', ICON.people, h.waiting ? '가입 ' + h.waiting : ''],
-      ['meals', '식단 사진', ICON.camera, h.meals ? '새 사진 ' + h.meals : ''], ['park', '주차 등록', ICON.car, h.park ? '오늘 ' + h.park + '대' : ''], ['notice', '공지 보내기', ICON.speaker, '']];
+      ['notice', '공지 보내기', ICON.speaker, '']];
     app.innerHTML = `<div class="owner"><div class="strip">관장님 화면</div>
       <div class="top"><div class="brand"><div class="logo">PT</div>이형우 피티샵</div><div class="hello">관장님, 안녕하세요</div></div>
       <div class="pad">
@@ -275,12 +270,12 @@ async function renderOwner() {
     const [ms, wt] = await Promise.all([rpc('o_members'), rpc('o_waiting')]);
     S.members = ms;
     const waitHtml = wt.map(w => `<div class="card" style="border-color:#C62828"><div class="big">${esc(w.name)} · 가입 신청</div>
-      <div class="sm">${esc(w.phone || '')}${w.car1 ? '\n차: ' + esc(w.car1) : ''}</div>
+      <div class="sm">${esc(w.phone || '')}</div>
       <div class="row"><button class="btn" data-act="passform" data-mode="approve" data-id="${w.id}" data-name="${esc(w.name)}">승인하기</button><button class="btn gray" data-act="deny" data-id="${w.id}">거절</button></div></div>`).join('');
     S.waiting = wt;
     app.innerHTML = frame('회원 목록', `${waitHtml ? '<div class="h2">새 가입 신청</div>' + waitHtml + '<div class="h2">회원</div>' : ''}<button class="btn line" data-go="addmember">+ 관장님이 직접 등록</button>
       ${ms.map(m => `<div class="card"><div class="big">${esc(m.name)}</div>
-        <div class="sm">남은 ${m.left}회 (${m.used || 0} / ${m.total}회 함)${m.left <= 3 ? '\n곧 끝나요. 재등록 안내가 필요해요' : ''}${m.car1 ? '\n차: ' + esc([m.car1, m.car2].filter(Boolean).join(', ')) : ''}</div>
+        <div class="sm">남은 ${m.left}회 (${m.used || 0} / ${m.total}회 함)${m.left <= 3 ? '\n곧 끝나요. 재등록 안내가 필요해요' : ''}</div>
         <div class="sm">${esc(m.phone || '')}</div><div class="row"><button class="btn line" data-act="passform" data-mode="edit" data-id="${m.id}" data-name="${esc(m.name)}">횟수 고치기</button><button class="btn line" data-act="charge" data-id="${m.id}" data-name="${esc(m.name)}">20회 충전</button></div>
         <button class="btn gray" data-act="remove" data-id="${m.id}" data-name="${esc(m.name)}" style="min-height:48px;font-size:17px">회원 삭제</button></div>`).join('') || '<div class="empty">아직 회원이 없어요</div>'}`);
     return;
@@ -355,7 +350,7 @@ async function renderMember() {
     const h = await rpc('m_home');
     ME = h.me;
     const next = h.bookings[0];
-    const tiles = [['book', '수업 예약', ICON.cal], ['left', '남은 횟수', ICON.ticket], ['car', '내 차 번호', ICON.car], ['meal', '식단 올리기', ICON.camera], ['body', '내 몸 변화', ICON.chart]];
+    const tiles = [['book', '수업 예약', ICON.cal], ['left', '남은 횟수', ICON.ticket]];
     app.innerHTML = `<div class="member"><div class="strip">회원님 화면</div>
       <div class="top"><div class="brand"><div class="logo">PT</div>이형우 피티샵</div><div class="hello">${esc(ME.name)} 회원님, 반가워요</div></div>
       <div class="pad">
@@ -363,7 +358,6 @@ async function renderMember() {
           <span class="s">${next && next.status === 'pending' ? '관장님 확인을 기다리는 중' : '남은 횟수 ' + ME.left + '회 · 눌러서 예약하기'}</span></button>
         <div class="grid">${tiles.map(t => `<button class="tile" data-go="${t[0]}">${svg(t[2])}${t[1]}</button>`).join('')}</div>
         ${h.messages.length ? '<div class="h2">알림</div>' + h.messages.map(m => `<div class="msg">${esc(m.text)}</div>`).join('') : ''}
-        ${h.replies.length ? '<div class="h2">관장님 한마디</div>' + h.replies.map(r => `<div class="msg" style="border-color:#C62828">식단 사진에: <b>${esc(r.reply)}</b></div>`).join('') : ''}
         ${installBlock()}
         <button class="btn line" data-tut="again" style="min-height:52px;font-size:18px">사용법 다시 보기</button>
         <button class="btn gray" data-act="logout" style="min-height:52px;font-size:18px">다른 사람으로 로그인</button>
@@ -547,7 +541,6 @@ function authScreen(mode, msg) {
         <button class="btn" data-auth="dologin" style="min-height:68px;font-size:23px">들어가기</button>` : `
         <label class="l" for="sn">이름</label><input class="in" id="sn" placeholder="예: 김민수" autocomplete="name">
         <label class="l" for="sp">휴대폰 번호</label><input class="in" id="sp" inputmode="tel" placeholder="010-0000-0000" autocomplete="tel">
-        <label class="l" for="sc">차 번호 <span style="font-size:17px;font-weight:400;color:#555">(차가 있으면)</span></label><input class="in" id="sc" placeholder="예: 12가 3456">
         <button class="btn" data-auth="dosignup" style="min-height:68px;font-size:23px">회원가입</button>
         <div class="sm">가입하면 관장님이 승인해 주세요. 다음부터는 이름과 번호 뒷자리 4개로 들어와요.</div>`}
       ${msg ? `<div class="note">${esc(msg)}</div>` : ''}
@@ -567,7 +560,7 @@ document.addEventListener('click', async e => {
       return start();
     }
     const r = m === 'dologin' ? await rpc('m_login', { p_name: $('#an').value, p_last4: $('#al').value })
-      : await rpc('m_signup', { p_name: $('#sn').value, p_phone: $('#sp').value, p_car: $('#sc').value });
+      : await rpc('m_signup', { p_name: $('#sn').value, p_phone: $('#sp').value, p_car: '' });
     if (!r.ok) return authScreen(m === 'dologin' ? 'login' : 'signup', r.msg);
     TOKEN = r.token; try { localStorage.setItem('ptk', TOKEN); } catch (er) {}
     start();
